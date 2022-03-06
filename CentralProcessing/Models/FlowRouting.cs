@@ -1,28 +1,26 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using centralProcessing.Helpers;
-using centralProcessing.Models;
 using centralProcessing.Interfaces;
-using NetMQ;
-using NetMQ.Sockets;
 
 namespace centralProcessing.Models
 {
     class FlowRouting : IFlowRouting
     {
+        
         private readonly IScreenHelper _screenHelper;
         private readonly IChannelRepository _channelRepository;
-        private PublisherSocket _pubSocket;
-        public FlowRouting(IScreenHelper screenHelper, IChannelRepository channelRepository)
+        private readonly IPubSocket _pubSocket;
+
+        public FlowRouting(IScreenHelper screenHelper, IChannelRepository channelRepository, IPubSocket pubSocket)
         {
+            
             _screenHelper = screenHelper;
             _channelRepository = channelRepository;
+            _pubSocket = pubSocket;
         }
 
-        public UserFlow GetRolling(PublisherSocket pubSocket)
+        public UserFlow GetRolling()
         {
-            _pubSocket = pubSocket;
             return StartFlow();
         }
 
@@ -129,7 +127,7 @@ namespace centralProcessing.Models
             {
                 foreach (var channel in channels)
                 {
-                    _pubSocket.SendMoreFrame(channel.Name).SendFrame(message);
+                    _pubSocket.Send(channel,message);
                 }
             }
             else
@@ -138,7 +136,7 @@ namespace centralProcessing.Models
                 {
                     if (name.Equals(channel.Name, StringComparison.InvariantCultureIgnoreCase))
                     {
-                        _pubSocket.SendMoreFrame(channel.Name).SendFrame(message);
+                        _pubSocket.Send(channel, message);
                         break;
                     }
                 }
@@ -223,10 +221,5 @@ namespace centralProcessing.Models
             Console.WriteLine("<Return to continue>");
             Console.ReadLine();
         }
-    }
-
-    public class UserFlow
-    {
-        public string NextStep { get; set; }
     }
 }

@@ -1,14 +1,8 @@
 ﻿using System;
+using centralProcessing.Interfaces;
 
 namespace centralProcessing.Helpers
 {
-    public interface IScreenHelper
-    {
-        void Clear();
-        void Print(string msg);
-        string GetResponse();
-    }
-
     public class ScreenHelper : IScreenHelper
     {
         public void Clear()

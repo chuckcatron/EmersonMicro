@@ -1,10 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
 using centralProcessing.Helpers;
 using centralProcessing.Interfaces;
 using centralProcessing.Models;
 using Microsoft.Extensions.Logging;
-using NetMQ.Sockets;
 
 namespace centralProcessing
 {
@@ -13,11 +11,14 @@ namespace centralProcessing
         private readonly ILogger _logger;
         private readonly IScreenHelper _screenHelper;
         private readonly IFlowRouting _flowRouting;
-        public CentralProcessing(ILogger<CentralProcessing> logger, IScreenHelper screenHelper, IFlowRouting flowRouting)
+        private readonly IPubSocket _pubSocket;
+
+        public CentralProcessing(ILogger<CentralProcessing> logger, IScreenHelper screenHelper, IFlowRouting flowRouting, IPubSocket pubSocket)
         {
             _logger = logger;
             _screenHelper = screenHelper;
             _flowRouting = flowRouting;
+            _pubSocket = pubSocket;
         }
         internal void Run()
         {
@@ -28,11 +29,9 @@ namespace centralProcessing
 
             while (flow.NextStep != "bye")
             {
-                using var pubSocket = new PublisherSocket();
-                pubSocket.Options.SendHighWatermark = 1000;
-                pubSocket.Bind("tcp://*:3000");
-
-                flow = _flowRouting.GetRolling(pubSocket);
+                _pubSocket.OpenConnection();
+                
+                flow = _flowRouting.GetRolling();
             }
 
             _logger.LogInformation("Application Ended at {dateTime}", DateTime.UtcNow);
