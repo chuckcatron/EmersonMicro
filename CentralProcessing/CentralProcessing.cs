@@ -35,6 +35,8 @@ namespace centralProcessing
             }
 
             _logger.LogInformation("Application Ended at {dateTime}", DateTime.UtcNow);
+
+            _pubSocket.CloseConnection();
         }
     }
 }
